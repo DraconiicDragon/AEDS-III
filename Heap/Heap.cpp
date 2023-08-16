@@ -32,6 +32,7 @@ void refaz_cima_baixo(std::vector<Item>& vetor, int pai) {
         troca(vetor[pai], vetor[filho]);
 
         pai = filho;
+        filho = pai*2;
     }
 }
 
