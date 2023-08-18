@@ -225,10 +225,8 @@ void intercalacao() {
             contGravacao = 0;
         }
         if(fitasVazias == quantidadeFitas/2) {
-            cout << "fim";
-            break;
-        }
-        cout << "fora" << endl;        
+            intercalando = false;
+        }        
     }
     fecharFitas();
 }
