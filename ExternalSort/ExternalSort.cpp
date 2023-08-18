@@ -55,10 +55,7 @@ void abrirFitas() {
 
         comecoLeitura = quantidadeFitas/2;
         fimLeitura = quantidadeFitas;
-    }
-    
-    fitasGravacao = new std::fstream[quantidadeFitas/2];
-    fitasLeitura = new std::fstream[quantidadeFitas/2];
+    }  
     
     int auxCont = 0;
     for(int i = comecoGravacao; i < fimGravacao; i++) {
@@ -76,6 +73,10 @@ void abrirFitas() {
 void externalSort(std::string endereco) {
     lendoMetadeCima = false;
     entrada.open(endereco);
+
+    fitasGravacao = new std::fstream[quantidadeFitas/2];
+    fitasLeitura = new std::fstream[quantidadeFitas/2];
+
     criarFitas();
     montarBlocosIniciais();
     intercalacao();
@@ -147,16 +148,21 @@ void intercalacao() {
     pair<char, int> memoria[tamanhoMemoria];
 
     bool fitaAberta[quantidadeFitas/2];
+    bool fitaVazia[quantidadeFitas/2];
     bool intercalando = true;
     bool passosRestando = true;
 
+    int fitasVazias = 0;
     int contMemoria = 0;
     int contGravacao = 0;
     int contFitas = 0;
     int fitasDisponiveis = quantidadeFitas/2;
     
-
     char charAux;
+
+    for(int i = 0; i < quantidadeFitas/2; i++) {
+        fitaVazia[i] = false;
+    }
 
     abrirFitas();
 
@@ -166,14 +172,21 @@ void intercalacao() {
             fitaAberta[i] = true;
         }
 
-        fitasDisponiveis = quantidadeFitas/2;
+        fitasDisponiveis = (quantidadeFitas/2)-fitasVazias;
+        passosRestando = true;
+        contFitas = 0;
+        contMemoria = 0;       
 
         while(passosRestando) {            
-            if(fitaAberta[contFitas]) {
+            if(fitaAberta[contFitas] && !fitaVazia[contFitas]) {
 
                 fitasLeitura[contFitas].get(charAux);
 
                 if(charAux == separador) {
+                    if(fitasLeitura[contFitas].eof()) {
+                        fitaVazia[contFitas] = true;
+                        fitasVazias++;
+                    }
                     fitaAberta[contFitas] = false;
                     fitasDisponiveis--;
                 } else {
@@ -190,22 +203,34 @@ void intercalacao() {
 
             if(contMemoria == tamanhoMemoria || fitasDisponiveis == 0) {
                 qsort(memoria, contMemoria, sizeof(pair<char, int>), comparePair);
-                cout << memoria[0].first;
-                cout << memoria[1].first;
-                cout << memoria[2].first;
-                // TODO guardar no arquivo o resultado
-                // fitasGravacao[contGravacao] << memoria[0].first;
-                break;
+
+                pair<char, int> aux = memoria[0];
+                memoria[0] = memoria[contMemoria-1];
+                memoria[contMemoria-1] = aux;
+
+                fitasGravacao[contGravacao] << aux.first;
+                contFitas = aux.second;
+                contMemoria--;
             }
 
-            if(fitasDisponiveis == 0) {
+            if((fitasDisponiveis == 0 && contMemoria == 0) || fitasVazias == quantidadeFitas/2) {
                 passosRestando = false;
             }
         }
-        intercalando = false;
+
+        fitasGravacao[contGravacao] << separador;
+        contGravacao++;
+
+        if(contGravacao == quantidadeFitas/2) {
+            contGravacao = 0;
+        }
+        if(fitasVazias == quantidadeFitas/2) {
+            cout << "fim";
+            break;
+        }
+        cout << "fora" << endl;        
     }
-    // TODO verificar o erro
-    // fecharFitas();
+    fecharFitas();
 }
 
 void fecharFitas() {
@@ -213,6 +238,4 @@ void fecharFitas() {
         fitasGravacao[i].close();
         fitasLeitura[i].close();
     }
-    delete[] fitasGravacao;
-    delete[] fitasLeitura;
 }
