@@ -57,6 +57,9 @@ void abrirFitas() {
         fimLeitura = quantidadeFitas;
     }  
     
+    fitasGravacao = new std::fstream[quantidadeFitas/2];
+    fitasLeitura = new std::fstream[quantidadeFitas/2];
+
     int auxCont = 0;
     for(int i = comecoGravacao; i < fimGravacao; i++) {
         fitasGravacao[auxCont].open("fita"+std::to_string(i)+".txt", std::fstream::out);
@@ -74,13 +77,11 @@ void externalSort(std::string endereco) {
     lendoMetadeCima = false;
     entrada.open(endereco);
 
-    fitasGravacao = new std::fstream[quantidadeFitas/2];
-    fitasLeitura = new std::fstream[quantidadeFitas/2];
+    
 
     criarFitas();
     montarBlocosIniciais();
     intercalacao();
-    fecharFitas();
 }
 
 void teste() {
@@ -139,7 +140,7 @@ void montarBlocosIniciais() {
         fitasGravacao[auxCont] << memoria << separador;
         auxCont++;
     }
-    lendoMetadeCima = true;
+    lendoMetadeCima = !lendoMetadeCima;
     entrada.close();
     fecharFitas();
 }
@@ -158,12 +159,11 @@ void intercalacao() {
     int contFitas = 0;
     int fitasDisponiveis = quantidadeFitas/2;
     
-    char charAux;
+    char charAux = '\0';
 
     for(int i = 0; i < quantidadeFitas/2; i++) {
         fitaVazia[i] = false;
     }
-
     abrirFitas();
 
     while(intercalando) {
@@ -175,24 +175,25 @@ void intercalacao() {
         fitasDisponiveis = (quantidadeFitas/2)-fitasVazias;
         passosRestando = true;
         contFitas = 0;
-        contMemoria = 0;       
+        contMemoria = 0;
+        charAux = '\0';       
 
         while(passosRestando) {            
             if(fitaAberta[contFitas] && !fitaVazia[contFitas]) {
 
                 fitasLeitura[contFitas].get(charAux);
-
-                if(charAux == separador) {
-                    if(fitasLeitura[contFitas].eof()) {
-                        fitaVazia[contFitas] = true;
+               
+                if(charAux == separador) {     
+                    if(fitasLeitura[contFitas].peek() == EOF) {
+                        fitaVazia[contFitas] = true;                       
                         fitasVazias++;
-                    }
+                    }              
                     fitaAberta[contFitas] = false;
                     fitasDisponiveis--;
                 } else {
-                    memoria[contMemoria].first = charAux;
+                    memoria[contMemoria].first = charAux;                    
                     memoria[contMemoria].second = contFitas;
-                    contMemoria++;
+                    contMemoria++;                    
                 }
             }
             
@@ -202,8 +203,9 @@ void intercalacao() {
             }
 
             if(contMemoria == tamanhoMemoria || fitasDisponiveis == 0) {
-                qsort(memoria, contMemoria, sizeof(pair<char, int>), comparePair);
-
+                if(contMemoria != 1) {
+                    qsort(memoria, contMemoria, sizeof(pair<char, int>), comparePair);
+                }
                 pair<char, int> aux = memoria[0];
                 memoria[0] = memoria[contMemoria-1];
                 memoria[contMemoria-1] = aux;
@@ -213,7 +215,7 @@ void intercalacao() {
                 contMemoria--;
             }
 
-            if((fitasDisponiveis == 0 && contMemoria == 0) || fitasVazias == quantidadeFitas/2) {
+            if((fitasDisponiveis == 0 && contMemoria == 0)) {
                 passosRestando = false;
             }
         }
@@ -229,6 +231,7 @@ void intercalacao() {
         }        
     }
     fecharFitas();
+    lendoMetadeCima = !lendoMetadeCima;
 }
 
 void fecharFitas() {
@@ -236,4 +239,6 @@ void fecharFitas() {
         fitasGravacao[i].close();
         fitasLeitura[i].close();
     }
+    delete[] fitasLeitura;
+    delete[] fitasGravacao;
 }
