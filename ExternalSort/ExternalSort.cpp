@@ -2,16 +2,20 @@
 #include <cstring>
 #include <fstream>
 
-#include <iostream>
-using namespace std;
-
-void fecharFitas();
+// Funções
+void criarFitas();
+void deletarFitas();
+void abrirFitas();
+void externalSort(std::string endereco);
+int compare(const void* a, const void* b);
+int comparePair(const void* a, const void* b);
 void montarBlocosIniciais();
-void intercalacao();
+void intercalacar();
 void gerarSaida(int fitaFinal);
+void fecharFitas();
 
+// Variáveis
 std::ifstream entrada;
-
 std::ifstream* fitasLeitura;
 std::ofstream* fitasGravacao;
 
@@ -33,7 +37,7 @@ void criarFitas() {
 void deletarFitas() {
     std::string aux;
     for(int i = 0; i < quantidadeFitas; i++) {
-        std::string aux = "fita"+to_string(i)+".txt";
+        std::string aux = "fita"+std::to_string(i)+".txt";
         const char* endereco = aux.c_str();
         remove(endereco);
         delete[] endereco;
@@ -79,12 +83,7 @@ void externalSort(std::string endereco) {
     entrada.open(endereco);
     criarFitas();
     montarBlocosIniciais();
-    intercalacao();
-    deletarFitas();
-}
-
-void teste() {
-    criarFitas();
+    intercalacar();
     deletarFitas();
 }
 
@@ -101,8 +100,8 @@ int compare(const void* a, const void* b) {
 }
 
 int comparePair(const void* a, const void* b) {
-    const pair<char, int>* x = (pair<char, int>*) a;
-    const pair<char, int>* y = (pair<char, int>*) b;
+    const std::pair<char, int>* x = (std::pair<char, int>*) a;
+    const std::pair<char, int>* y = (std::pair<char, int>*) b;
 
     if((*x).first > (*y).first) {
         return 1;
@@ -142,8 +141,8 @@ void montarBlocosIniciais() {
     fecharFitas();
 }
 
-void intercalacao() {
-    pair<char, int> memoria[tamanhoMemoria];
+void intercalacar() {
+    std::pair<char, int> memoria[tamanhoMemoria];
 
     bool fitaAberta[quantidadeFitas/2];
     bool fitaVazia[quantidadeFitas/2];
@@ -219,9 +218,9 @@ void intercalacao() {
 
                 if(contMemoria == tamanhoMemoria || fitasDisponiveis == 0) {
                     if(contMemoria != 1) {
-                        qsort(memoria, contMemoria, sizeof(pair<char, int>), comparePair);
+                        qsort(memoria, contMemoria, sizeof(std::pair<char, int>), comparePair);
                     }
-                    pair<char, int> aux = memoria[0];
+                    std::pair<char, int> aux = memoria[0];
                     memoria[0] = memoria[contMemoria-1];
                     memoria[contMemoria-1] = aux;
 
@@ -276,7 +275,7 @@ void gerarSaida(int fitaFinal) {
     if(lendoMetadeCima) {
         fitaFinal += quantidadeFitas/2;
     }
-    std::string aux = "fita"+to_string(fitaFinal)+".txt";
+    std::string aux = "fita"+std::to_string(fitaFinal)+".txt";
     const char* saida = aux.c_str();
 
     remove("Saida.txt");
