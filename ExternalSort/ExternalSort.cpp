@@ -1,5 +1,5 @@
 #include <vector>
-#include <string>
+#include <cstring>
 #include <fstream>
 
 #include <iostream>
@@ -8,6 +8,7 @@ using namespace std;
 void fecharFitas();
 void montarBlocosIniciais();
 void intercalacao();
+void gerarSaida(int fitaFinal);
 
 std::ifstream entrada;
 
@@ -29,14 +30,14 @@ void criarFitas() {
     }
 }
 
-// lol
 void deletarFitas() {
-    remove("fita0.txt");
-    remove("fita1.txt");
-    remove("fita2.txt");
-    remove("fita3.txt");
-    remove("fita4.txt");
-    remove("fita5.txt");
+    std::string aux;
+    for(int i = 0; i < quantidadeFitas; i++) {
+        std::string aux = "fita"+to_string(i)+".txt";
+        const char* endereco = aux.c_str();
+        remove(endereco);
+        delete[] endereco;
+    }
 }
 
 void abrirFitas() {
@@ -76,19 +77,15 @@ void abrirFitas() {
 void externalSort(std::string endereco) {
     lendoMetadeCima = false;
     entrada.open(endereco);
-
-    
-
     criarFitas();
     montarBlocosIniciais();
     intercalacao();
+    deletarFitas();
 }
 
 void teste() {
-    string teste;
-    fitasGravacao = new std::ofstream[3];
-    fitasGravacao[0].open("fita0.txt", std::fstream::out);
-    fitasGravacao[0] << "teste";
+    criarFitas();
+    deletarFitas();
 }
 
 int compare(const void* a, const void* b) {
@@ -162,6 +159,8 @@ void intercalacao() {
     int fitasDisponiveis = quantidadeFitas/2;
     int fitasGravadas = quantidadeFitas/2;
     
+    int fitaFinal;
+
     char charAux = '\0';
 
     while(intercalacoesRestantes) {
@@ -247,18 +246,20 @@ void intercalacao() {
                 intercalando = false;
             }        
         }
-
-        lendoMetadeCima = !lendoMetadeCima;
+       
         fitasGravadas = 0;
         for(int i = 0; i < quantidadeFitas/2; i++) {
             if(foiGravada[i]) {
                 fitasGravadas++;
+                fitaFinal = i;
             }
-        }
+        }        
+        fecharFitas();
         if(fitasGravadas == 1) {
             intercalacoesRestantes = false;
+            gerarSaida(fitaFinal);
         }
-        fecharFitas();
+        lendoMetadeCima = !lendoMetadeCima;
     }
 }
 
@@ -271,6 +272,13 @@ void fecharFitas() {
     delete[] fitasGravacao;
 }
 
-void gerarSaida() {
+void gerarSaida(int fitaFinal) {
+    if(lendoMetadeCima) {
+        fitaFinal += quantidadeFitas/2;
+    }
+    std::string aux = "fita"+to_string(fitaFinal)+".txt";
+    const char* saida = aux.c_str();
 
+    remove("Saida.txt");
+    rename(saida, "Saida.txt");
 }
